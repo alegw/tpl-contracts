@@ -1,37 +1,32 @@
 pragma solidity ^0.4.19;
 
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Registry.sol";
 
 contract Jurisdiction is Ownable, Registry {
 
-  event ValidatorAdded(address validator);
-  event ValidatorRemoved(address validator);
-
   mapping(address => mapping(string => uint256)) attributes;
 
-  mapping(address => bool) validators;
+  mapping(address => mapping(string => bool)) validators;
 
-  modifier onlyValidator() {
-    require(isValidator(msg.sender));
+  modifier onlyValidatorFor(string attribute) {
+    require(isValidatorFor(msg.sender, attribute));
     _;
   }
 
-  function addValidator(address validator) public onlyOwner {
-    validators[validator] = true;
-    ValidatorAdded(validator);
+  function addValidatorFor(address validator, string attribute) public onlyOwner {
+    validators[validator][attribute] = true;
   }
 
-  function removeValidator(address validator) public onlyOwner {
-    validators[validator] = false;
-    ValidatorRemoved(validator);
+  function removeValidatorFor(address validator, string attribute) public onlyOwner {
+    validators[validator][attribute] = false;
   }
 
-  function isValidator(address who) public view returns (bool) {
-    return validators[who];
+  function isValidatorFor(address who, string attribute) public view returns (bool) {
+    return validators[who][attribute];
   }
 
-  function addAttribute(address who, string attribute, uint256 value) public onlyValidator {
+  function addAttribute(address who, string attribute, uint256 value) public onlyValidatorFor(attribute) {
     attributes[who][attribute] = value;
   }
 
